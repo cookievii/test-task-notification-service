@@ -1,20 +1,17 @@
 import os
-import sys
 
 from dotenv import load_dotenv
 
 load_dotenv()
-BUILD_TYPE = os.getenv("BUILD_TYPE", "test")
-TESTING = True if len(sys.argv) > 1 and sys.argv[1] == "test" else False
 
-if TESTING:
-    BUILD_TYPE = "test"
+TESTING = False
 
-match BUILD_TYPE:
+match TESTING:
 
-    case "dev":
+    case False:
         DEBUG = False
         SECRET_KEY = os.getenv('SECRET_KEY')
+        REDIS_HOST = os.getenv('REDIS_HOST')
         DATABASES = {
             "default": {
                 "ENGINE": "django.db.backends.postgresql",
@@ -26,9 +23,10 @@ match BUILD_TYPE:
             }
         }
 
-    case "test":
+    case True:
         DEBUG = True
         SECRET_KEY = os.getenv('SECRET_KEY')
+        REDIS_HOST = '127.0.0.1'
         DATABASES = {
             "default": {
                 "ENGINE": "django.db.backends.postgresql",

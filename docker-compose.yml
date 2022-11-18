@@ -10,21 +10,35 @@ services:
     ports:
       - "5432:5432"
 
-  backend_notification:
-    build: ./notification_service/notification/
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+
+  notification:
+    build: ./notification_service
     restart: always
     command: >
       sh -c "
       python manage.py collectstatic --noinput &&
       python manage.py makemigrations &&
       python manage.py migrate &&
-      gunicorn setting.wsgi:application --bind 0.0.0.0:8000
+      gunicorn settings.wsgi:application --bind 0.0.0.0:8000
       "
     volumes:
       - static_value:/notification/static/
       - media_value:/notification/media/
     depends_on:
       - db
+
+  celery:
+    build: ./notification_service
+    volumes:
+      - ./notification_service:/notification_service:cached
+    command: celery -A settings worker --loglevel=info -P eventlet
+    depends_on:
+      - redis
+      - notification
 
   nginx:
     image: nginx:1.19.3
@@ -36,7 +50,7 @@ services:
       - media_value:/var/html/media/
     depends_on:
       - db
-      - backend_notification
+      - notification
 
 volumes:
   postgres_data:

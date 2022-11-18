@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from notification_service.settings import config
+from settings import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -8,7 +8,7 @@ SECRET_KEY = config.SECRET_KEY
 
 DEBUG = config.DEBUG
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     # Default
@@ -19,9 +19,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Dependencies
-
+    "rest_framework",
     # Apps
-
+    "notification.apps.NotificationConfig",
+    "api.apps.ApiConfig",
 ]
 
 MIDDLEWARE = [
@@ -77,7 +78,9 @@ TIME_ZONE = "Europe/Moscow"
 
 USE_I18N = True
 
-USE_TZ = True
+USE_L10N = True
+
+USE_TZ = False
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "static/"
@@ -86,3 +89,14 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Настройки Celery
+REDIS_HOST = config.REDIS_HOST
+REDIS_PORT = "6379"
+
+CELERY_BROKER_URL = "redis://" + REDIS_HOST + ":" + REDIS_PORT + "/0"
+CELERY_BROKER_TRANSPORT_OPTION = {"visibility_timeout": 3600}
+CELERY_RESULT_BACKEND = "redis://" + REDIS_HOST + ":" + REDIS_PORT + "/0"
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
